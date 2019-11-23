@@ -13,7 +13,6 @@ use wasm_bindgen::prelude::*;
 //-------- Transaction --------------//
 //-----------------------------------//
 
-/// Type representing a unsigned transaction
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct Transaction(pub(crate) TaggedTransaction);
