@@ -192,6 +192,22 @@ macro_rules! impl_signature {
     };
 }
 
+#[wasm_bindgen]
+pub struct LegacyDaedalusPrivateKey(crypto::SecretKey<crypto::LegacyDaedalus>);
+
+#[wasm_bindgen]
+impl LegacyDaedalusPrivateKey {
+    pub fn from_bytes(bytes: &[u8]) -> Result<LegacyDaedalusPrivateKey, JsValue> {
+        crypto::SecretKey::<crypto::LegacyDaedalus>::from_binary(bytes)
+            .map_err(|e| JsValue::from_str(&format!("{}", e)))
+            .map(LegacyDaedalusPrivateKey)
+    }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.0.as_ref().to_vec()
+    }
+}
+
 impl_signature!(Ed25519Signature, Vec<u8>, crypto::Ed25519);
 impl_signature!(AccountWitness, tx::WitnessAccountData, crypto::Ed25519);
 impl_signature!(UtxoWitness, tx::WitnessUtxoData, crypto::Ed25519);
@@ -1613,22 +1629,35 @@ impl Witness {
         Witness(tx::Witness::Account(witness.0.clone()))
     }
 
-    /// Generate Witness for an legacy utxo-based transaction Input
-    pub fn for_legacy_utxo(
+    /// Generate Witness for a legacy icarus utxo-based transaction Input
+    pub fn for_legacy_icarus_utxo(
         genesis_hash: &Hash,
         transaction_id: &TransactionSignDataHash,
         secret_key: &Bip32PrivateKey,
     ) -> Witness {
-        Witness(tx::Witness::new_old_utxo(
+        Witness(tx::Witness::new_old_icarus_utxo(
             &genesis_hash.0,
             &transaction_id.0,
             &secret_key.0,
         ))
     }
 
-    // Witness for a legacy utxo-based transaction generated externally (such as hardware wallets)
-    pub fn from_external_legacy_utxo(key: &Bip32PublicKey, witness: &LegacyUtxoWitness) -> Witness {
+    // Witness for a legacy icarus utxo-based transaction generated externally (such as hardware wallets)
+    pub fn from_external_legacy_icarus_utxo(key: &Bip32PublicKey, witness: &LegacyUtxoWitness) -> Witness {
         Witness(tx::Witness::OldUtxo(key.0.clone(), witness.0.clone()))
+    }
+
+    /// Generate Witness for a legacy daedalus utxo-based transaction Input
+    pub fn for_legacy_daedalus_utxo(
+        genesis_hash: &Hash,
+        transaction_id: &TransactionSignDataHash,
+        secret_key: &LegacyDaedalusPrivateKey,
+    ) -> Witness {
+        Witness(tx::Witness::new_old_daedalus_utxo(
+            &genesis_hash.0,
+            &transaction_id.0,
+            &secret_key.0,
+        ))
     }
 
     /// Get string representation
