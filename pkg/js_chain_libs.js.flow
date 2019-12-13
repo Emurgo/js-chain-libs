@@ -684,6 +684,11 @@ declare export class DelegationType {
    * @returns {PoolId}
    */
   get_full(): PoolId | void;
+
+  /**
+   * @returns {DelegationRatio}
+   */
+  get_ratios(): DelegationRatio | void;
 }
 /**
  */

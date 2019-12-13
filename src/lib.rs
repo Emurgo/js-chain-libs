@@ -1205,6 +1205,13 @@ impl DelegationType {
             _ => None,
         }
     }
+
+    pub fn get_ratios(&self) -> Option<DelegationRatio> {
+        match &self.0 {
+            chain::account::DelegationType::Ratio(ratio) => Some(DelegationRatio(ratio.clone())),
+            _ => None,
+        }
+    }
 }
 
 /// Delegation Ratio type express a number of parts
