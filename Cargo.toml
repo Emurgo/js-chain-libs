@@ -1,6 +1,6 @@
 [package]
 name = "js-chain-libs"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>", "Sebastien Guillemot <sebastien@emurgo.io>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
