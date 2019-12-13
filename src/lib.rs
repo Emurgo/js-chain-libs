@@ -1240,6 +1240,14 @@ impl PoolDelegationRatio {
             part,
         }
     }
+
+    pub fn parts(&self) -> u8 {
+        self.part
+    }
+
+    pub fn pool(&self) -> PoolId {
+        self.pool.clone().into()
+    }
 }
 
 impl_collection!(PoolDelegationRatios, PoolDelegationRatio);
@@ -1256,6 +1264,22 @@ impl DelegationRatio {
 
         // FIXME: It could be useful to return an error instea of an Option?
         chain::account::DelegationRatio::new(parts, pools).map(Self)
+    }
+
+    pub fn parts(&self) -> u8 {
+        self.0.parts()
+    }
+
+    pub fn pools(&self) -> PoolDelegationRatios {
+        self.0
+            .pools()
+            .iter()
+            .map(|ratio| PoolDelegationRatio {
+                pool: ratio.0.clone().into(),
+                part: ratio.1,
+            })
+            .collect::<Vec<PoolDelegationRatio>>()
+            .into()
     }
 }
 
