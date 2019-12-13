@@ -5,6 +5,7 @@ mod utils;
 
 use bech32::{Bech32, ToBase32 as _};
 use chain::{account, certificate, fee, key, transaction as tx, value};
+use chain_core::mempack::{ReadBuf, Readable};
 use chain_core::property::Block as _;
 use chain_core::property::Deserialize as _;
 use chain_core::property::Fragment as _;
@@ -19,7 +20,6 @@ use std::convert::TryFrom;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
-use chain_core::mempack::{ReadBuf, Readable};
 
 pub use transaction::*;
 
@@ -1110,10 +1110,7 @@ impl From<chain::leadership::genesis::GenesisPraosLeader> for GenesisPraosLeader
 
 #[wasm_bindgen]
 impl GenesisPraosLeader {
-    pub fn new(
-        kes_public_key: &KesPublicKey,
-        vrf_public_key: &VrfPublicKey,
-    ) -> Self {
+    pub fn new(kes_public_key: &KesPublicKey, vrf_public_key: &VrfPublicKey) -> Self {
         Self(chain::leadership::genesis::GenesisPraosLeader {
             kes_public_key: kes_public_key.0.clone(),
             vrf_public_key: vrf_public_key.0.clone(),
@@ -1507,7 +1504,9 @@ impl Certificate {
     pub fn as_bytes(&self) -> Vec<u8> {
         match &self.0 {
             certificate::Certificate::StakeDelegation(cert) => cert.serialize().as_ref().to_vec(),
-            certificate::Certificate::OwnerStakeDelegation(cert) => cert.serialize().as_ref().to_vec(),
+            certificate::Certificate::OwnerStakeDelegation(cert) => {
+                cert.serialize().as_ref().to_vec()
+            }
             certificate::Certificate::PoolRegistration(cert) => cert.serialize().as_ref().to_vec(),
             certificate::Certificate::PoolRetirement(cert) => cert.serialize().as_ref().to_vec(),
             certificate::Certificate::PoolUpdate(cert) => cert.serialize().as_ref().to_vec(),
@@ -1557,7 +1556,13 @@ impl PoolRegistration {
     }
 
     pub fn operators(&self) -> PublicKeys {
-        PublicKeys(self.0.operators.iter().map(|key| key.clone().into()).collect())
+        PublicKeys(
+            self.0
+                .operators
+                .iter()
+                .map(|key| key.clone().into())
+                .collect(),
+        )
     }
 
     pub fn rewards(&self) -> TaxType {
@@ -1565,7 +1570,10 @@ impl PoolRegistration {
     }
 
     pub fn reward_account(&self) -> Option<Account> {
-        self.0.reward_account.as_ref().map(|acc| Account(acc.clone()))
+        self.0
+            .reward_account
+            .as_ref()
+            .map(|acc| Account(acc.clone()))
     }
 
     pub fn keys(&self) -> GenesisPraosLeader {
