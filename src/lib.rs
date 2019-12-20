@@ -452,10 +452,8 @@ pub struct Address(chain_addr::Address);
 
 #[wasm_bindgen]
 impl Address {
-    pub fn from_bytes(bytes: Uint8Array) -> Result<Address, JsValue> {
-        let mut slice: Box<[u8]> = vec![0; bytes.length() as usize].into_boxed_slice();
-        bytes.copy_to(&mut *slice);
-        chain_addr::Address::deserialize(&*slice)
+    pub fn from_bytes(bytes: &[u8]) -> Result<Address, JsValue> {
+        chain_addr::Address::from_bytes(bytes)
             .map_err(|e| JsValue::from_str(&format!("{}", e)))
             .map(Address)
     }
@@ -2218,10 +2216,9 @@ impl FragmentId {
         chain::fragment::FragmentId::hash_bytes(bytes).into()
     }
 
-    pub fn from_bytes(bytes: Uint8Array) -> Result<FragmentId, JsValue> {
-        let mut slice: Box<[u8]> = vec![0; bytes.length() as usize].into_boxed_slice();
-        bytes.copy_to(&mut *slice);
-        chain::fragment::FragmentId::deserialize(&*slice)
+    pub fn from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+        let mut buf = ReadBuf::from(&bytes);
+        chain::fragment::FragmentId::read(&mut buf)
             .map_err(|e| JsValue::from_str(&format!("{}", e)))
             .map(FragmentId)
     }
