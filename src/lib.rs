@@ -17,6 +17,7 @@ use hex;
 use js_sys::Uint8Array;
 use rand_os::OsRng;
 use std::convert::TryFrom;
+use std::num::NonZeroU64;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
@@ -1788,6 +1789,28 @@ impl Balance {
     }
 }
 
+#[wasm_bindgen]
+pub struct PerCertificateFee(fee::PerCertificateFee);
+
+#[wasm_bindgen]
+impl PerCertificateFee {
+    pub fn new() -> PerCertificateFee {
+        PerCertificateFee(fee::PerCertificateFee::default())
+    }
+
+    pub fn set_pool_registration(&mut self, val: &Value) -> () {
+        self.0.certificate_pool_registration = NonZeroU64::new(*val.as_ref());
+    }
+
+    pub fn set_stake_delegation(&mut self, val: &Value) -> () {
+        self.0.certificate_stake_delegation = NonZeroU64::new(*val.as_ref());
+    }
+
+    pub fn set_owner_stake_delegation(&mut self, val: &Value) -> () {
+        self.0.certificate_owner_stake_delegation = NonZeroU64::new(*val.as_ref());
+    }
+}
+
 /// Algorithm used to compute transaction fees
 /// Currently the only implementation is the Linear one
 #[wasm_bindgen]
@@ -1796,12 +1819,19 @@ pub struct Fee(FeeVariant);
 #[wasm_bindgen]
 impl Fee {
     /// Linear algorithm, this is formed by: `coefficient * (#inputs + #outputs) + constant + certificate * #certificate
-    pub fn linear_fee(constant: &Value, coefficient: &Value, certificate: &Value) -> Fee {
-        Fee(FeeVariant::Linear(fee::LinearFee::new(
+    pub fn linear_fee(
+        constant: &Value,
+        coefficient: &Value,
+        certificate: &Value,
+        per_certificate_fee: &PerCertificateFee,
+    ) -> Fee {
+        let mut linear_fee = fee::LinearFee::new(
             *constant.0.as_ref(),
             *coefficient.0.as_ref(),
             *certificate.0.as_ref(),
-        )))
+        );
+        linear_fee.per_certificate_fees(per_certificate_fee.0);
+        Fee(FeeVariant::Linear(linear_fee))
     }
 
     pub fn calculate(&self, tx: &Transaction) -> Value {
