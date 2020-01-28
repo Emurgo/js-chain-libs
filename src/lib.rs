@@ -935,6 +935,12 @@ impl AccountIdentifier {
         hex::encode(self.0.as_ref())
     }
 
+    pub fn from_bytes(bytes: &[u8]) -> AccountIdentifier {
+        let mut slice = [0u8; 32];
+        slice.copy_from_slice(bytes);
+        AccountIdentifier(tx::UnspecifiedAccountIdentifier::from(slice))
+    }
+
     pub fn to_account_single(&self) -> Result<Account, JsValue> {
         self.0
             .to_single_account()
